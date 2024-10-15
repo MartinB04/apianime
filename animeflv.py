@@ -14,16 +14,17 @@ respuesta = requests.get(url, headers=encabezados)
 if respuesta.status_code == 200:
     parser = html.fromstring(respuesta.content)
 
-    nombres_animes = parser.xpath("//ul[@class='ListAnimes AX Rows A06 C04 D03']//article[contains(@class, 'Anime')]//h3[@class='Title']/text()")
-    urls_imagenes = parser.xpath("//ul[@class='ListAnimes AX Rows A06 C04 D03']//article[@class='Anime alt B']//img/@src")
+    """ nombres_animes = parser.xpath("//ul[@class='ListAnimes AX Rows A06 C04 D03']//article[contains(@class, 'Anime')]//h3[@class='Title']/text()")
+    urls_imagenes = parser.xpath("//ul[@class='ListAnimes AX Rows A06 C04 D03']//article[@class='Anime alt B']//img/@src") """
     urls_links = parser.xpath("//ul[@class='ListAnimes AX Rows A06 C04 D03']//article[@class='Anime alt B']//a/@href")
 
 
 
     
-    for nombre, url_imagen, url_link in zip(nombres_animes, urls_imagenes, urls_links):
-        print("Nombre del anime:", nombre)
-        print("URL de la imagen:", url+url_imagen)
+    """ for nombre, url_imagen, url_link in zip(nombres_animes, urls_imagenes, urls_links): """
+    for url_link in(urls_links):
+        """ print("Nombre del anime:", nombre)
+        print("URL de la imagen:", url+url_imagen) """
         print("URL del link:", url+url_link)
         
         
@@ -36,11 +37,32 @@ if respuesta.status_code == 200:
             # Parsear la página de detalles del anime
             parser_anime = html.fromstring(respuesta_anime.content)
 
+            titulo = parser_anime.xpath("//div[@class='Ficha fchlt']//div[@class='Container']//h1[@class='Title']/text()")
+            if titulo:
+                #Elimina los [''] que envuelven el titulo extraido.
+                titulo = titulo[0].strip()
+                print("Titulo: ", titulo)
+
+            tipo_anime = parser_anime.xpath("//div[@class='Ficha fchlt']//div[@class='Container']//span[@class='Type tv']/text()")
+            if tipo_anime:
+                tipo_anime = tipo_anime[0].strip()
+                print("Tipo anime: ", tipo_anime)
+
+            anime_cover = parser_anime.xpath("//aside[@class='SidebarA BFixed']/div[@class='AnimeCover']/div[@class='Image']//img/@src")
+            if anime_cover:
+                anime_cover = anime_cover[0].strip()
+                print("Cover: ",url + anime_cover)
+                
+            anime_status = parser_anime.xpath("//aside[@class='SidebarA BFixed']/p[@class='AnmStts']/span[@class='fa-tv']/text()")
+            if anime_status:
+                anime_status = anime_status[0].strip()
+                print("Status: ", anime_status)
+
             # Extraer la sinopsis del anime (esto depende de la estructura HTML de la página)
             sinopsis = parser_anime.xpath("//section[@class='WdgtCn']/div[@class='Description']/p/text()")
             if sinopsis:
                 sinopsis = sinopsis[0].strip()
-                print("Sinopsis:", sinopsis)
+                print("Sinopsis: ", sinopsis)
 
             # Extraer géneros del anime
             generos = parser_anime.xpath("//section[@class='WdgtCn']/nav[@class='Nvgnrs']/a/text()")
