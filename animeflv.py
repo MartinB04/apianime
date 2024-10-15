@@ -1,14 +1,14 @@
-
 import requests
 from lxml import html
 
 encabezados = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/71.0.3578.80 Chrome/71.0.3578.80 Safari/537.36"}
 
 url = "https://www3.animeflv.net"
+url_browse = "https://www3.animeflv.net/browse"
 
-
-
-respuesta = requests.get(url, headers=encabezados)
+datos_animes = []
+#respuesta = requests.get(url, headers=encabezados)
+respuesta = requests.get(url_browse, headers=encabezados)
 
 
 if respuesta.status_code == 200:
@@ -16,7 +16,8 @@ if respuesta.status_code == 200:
 
     """ nombres_animes = parser.xpath("//ul[@class='ListAnimes AX Rows A06 C04 D03']//article[contains(@class, 'Anime')]//h3[@class='Title']/text()")
     urls_imagenes = parser.xpath("//ul[@class='ListAnimes AX Rows A06 C04 D03']//article[@class='Anime alt B']//img/@src") """
-    urls_links = parser.xpath("//ul[@class='ListAnimes AX Rows A06 C04 D03']//article[@class='Anime alt B']//a/@href")
+    #urls_links = parser.xpath("//ul[@class='ListAnimes AX Rows A06 C04 D03']//article[@class='Anime alt B']//a/@href")
+    urls_links = parser.xpath("//ul[@class='ListAnimes AX Rows A03 C02 D02']/li/article[@class='Anime alt B']/a/@href")
 
 
 
@@ -38,52 +39,51 @@ if respuesta.status_code == 200:
             parser_anime = html.fromstring(respuesta_anime.content)
 
             titulo = parser_anime.xpath("//div[@class='Ficha fchlt']//div[@class='Container']//h1[@class='Title']/text()")
-            if titulo:
-                #Elimina los [''] que envuelven el titulo extraido.
-                titulo = titulo[0].strip()
-                print("Titulo: ", titulo)
+            titulo = titulo[0].strip() if titulo else "N/A"
 
             tipo_anime = parser_anime.xpath("//div[@class='Ficha fchlt']//div[@class='Container']//span[@class='Type tv']/text()")
-            if tipo_anime:
-                tipo_anime = tipo_anime[0].strip()
-                print("Tipo anime: ", tipo_anime)
+            tipo_anime = tipo_anime[0].strip() if tipo_anime else "N/A"
 
             anime_cover = parser_anime.xpath("//aside[@class='SidebarA BFixed']/div[@class='AnimeCover']/div[@class='Image']//img/@src")
-            if anime_cover:
-                anime_cover = anime_cover[0].strip()
-                print("Cover: ",url + anime_cover)
+            anime_cover = anime_cover[0].strip() if anime_cover else "N/A"
                 
             anime_status = parser_anime.xpath("//aside[@class='SidebarA BFixed']/p[@class='AnmStts']/span[@class='fa-tv']/text()")
-            if anime_status:
-                anime_status = anime_status[0].strip()
-                print("Status: ", anime_status)
+            anime_status = anime_status[0].strip() if anime_status else "N/A"
 
             # Extraer la sinopsis del anime (esto depende de la estructura HTML de la página)
             sinopsis = parser_anime.xpath("//section[@class='WdgtCn']/div[@class='Description']/p/text()")
-            if sinopsis:
-                sinopsis = sinopsis[0].strip()
-                print("Sinopsis: ", sinopsis)
+            sinopsis = sinopsis[0].strip() if sinopsis else "N/A"
 
             # Extraer géneros del anime
             generos = parser_anime.xpath("//section[@class='WdgtCn']/nav[@class='Nvgnrs']/a/text()")
-            # Verificamos si existen géneros
-            if generos:
-            # Almacenar la lista de géneros
-                lista_generos = [genero.strip() for genero in generos]  # Limpiamos espacios en blanco innecesarios
-            # Imprimir la lista de géneros
-                print("Géneros:", ', '.join(lista_generos))
-            else:
-                print("No se encontraron géneros")
+            lista_generos = [genero.strip() for genero in generos] if generos else ["N/A"]
 
             """ # Extraer otros detalles, como episodios o estado (opcional)
             episodios = parser_anime.xpath("//span[contains(text(), 'Episodios')]/following-sibling::strong/text()")
             if episodios:
                 print("Episodios:", episodios[0]) """
+                
+            datos_animes.append({
+                "Titulo": titulo,
+                "Tipo anime": tipo_anime,
+                "Cover": url + anime_cover,
+                "Status": anime_status,
+                "Sinopsis": sinopsis,
+                "Géneros": ', '.join(lista_generos)
+            })
 
         else:
             print(f"Error al acceder a los detalles del anime en: {url_anime}. Código de estado: {respuesta_anime.status_code}")
         
-        print("=" * 40)
-
+    # Imprimir todos los detalles de los animes
+    # Verifica que los datos estén presentes
+    if datos_animes:  # Comprueba que la lista no esté vacía
+        for anime in datos_animes:
+            for key, value in anime.items():
+                print(f"{key}: {value}")
+            print("=" * 40)  # Separador de 10 signos de igual
+    else:
+        print("No hay datos en la lista.")
+    print(type(datos_animes))
 else:
     print("Error al obtener la página web. Código de estado:", respuesta.status_code)
