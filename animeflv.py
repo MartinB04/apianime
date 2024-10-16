@@ -1,5 +1,6 @@
 import requests
 from lxml import html
+import re
 
 encabezados = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/71.0.3578.80 Chrome/71.0.3578.80 Safari/537.36"}
 
@@ -56,7 +57,8 @@ while pagina_actual <= max_paginas:
                 anime_cover = parser_anime.xpath("//aside[@class='SidebarA BFixed']/div[@class='AnimeCover']/div[@class='Image']//img/@src")
                 anime_cover = anime_cover[0].strip() if anime_cover else "N/A"
                     
-                anime_status = parser_anime.xpath("//aside[@class='SidebarA BFixed']/p[@class='AnmStts']/span[@class='fa-tv']/text()")
+                #anime_status = parser_anime.xpath("//aside[@class='SidebarA BFixed']/p[@class='AnmStts']/span[@class='fa-tv']/text()")
+                anime_status = parser_anime.xpath("//aside[@class='SidebarA BFixed']//span[@class='fa-tv']/text()")
                 anime_status = anime_status[0].strip() if anime_status else "N/A"
 
                 # Extraer la sinopsis del anime (esto depende de la estructura HTML de la página)
@@ -66,11 +68,15 @@ while pagina_actual <= max_paginas:
                 # Extraer géneros del anime
                 generos = parser_anime.xpath("//section[@class='WdgtCn']/nav[@class='Nvgnrs']/a/text()")
                 lista_generos = [genero.strip() for genero in generos] if generos else ["N/A"]
-
-                """ # Extraer otros detalles, como episodios o estado (opcional)
-                episodios = parser_anime.xpath("//span[contains(text(), 'Episodios')]/following-sibling::strong/text()")
-                if episodios:
-                    print("Episodios:", episodios[0]) """
+                
+                popularidad = parser_anime.xpath("//div[@class='Ficha fchlt']/div[@class='Container']//div[@class='vtshr']/div[@class='Votes']/span[@class='vtprmd']/text()")
+                popularidad = popularidad[0].strip() if popularidad else "N/A"
+                
+                precuela = parser_anime.xpath("//section[@class='WdgtCn']/ul[@class='ListAnmRel']/li[contains(text(), '(Precuela)')]/a/text()")
+                precuela = precuela[0].strip() if precuela else "N/A"
+                
+                secuela = parser_anime.xpath("//section[@class='WdgtCn']/ul[@class='ListAnmRel']/li[contains(text(), '(Secuela)')]/a/text()")
+                secuela = secuela[0].strip() if secuela else "N/A"
                     
                 datos_animes.append({
                     "Titulo": titulo,
@@ -78,7 +84,11 @@ while pagina_actual <= max_paginas:
                     "Cover": url + anime_cover,
                     "Status": anime_status,
                     "Sinopsis": sinopsis,
-                    "Géneros": ', '.join(lista_generos)
+                    "Géneros": ', '.join(lista_generos),
+                    "Popularidad": popularidad,
+                    "Precuela": precuela,
+                    "Secuela": secuela,
+                    #"Total episodios": episodio,
                 })
 
             else:
