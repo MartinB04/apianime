@@ -7,9 +7,11 @@ encabezados = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36
 url = "https://www3.animeflv.net"
 url_browse = "https://www3.animeflv.net/browse"
 
+id_a = 0
+
 datos_animes = []
 pagina_actual = 1
-max_paginas = 2  # Limitar el número de páginas a recorrer
+max_paginas = 1  # Limitar el número de páginas a recorrer
 #respuesta = requests.get(url, headers=encabezados)
 respuesta = requests.get(url_browse, headers=encabezados)
 
@@ -77,18 +79,30 @@ while pagina_actual <= max_paginas:
                 
                 secuela = parser_anime.xpath("//section[@class='WdgtCn']/ul[@class='ListAnmRel']/li[contains(text(), '(Secuela)')]/a/text()")
                 secuela = secuela[0].strip() if secuela else "N/A"
-                    
+                
+                id_a += 1
+                #total_episodios = parser_anime.xpath("//main[@class='Main']//ul[@id='episodeList']/li[@class='fa-play-circle']/a/p/text()")
+                #total_episodios = total_episodios[0].strip() if total_episodios else "N/A"
+                
+                #total_episodios = parser_anime.xpath("//ul[@id='episodeList']/li/a/p/text()")
+                #print("Episodios ", total_episodios)
+                #total_episodios = [episodio.strip() for episodio in total_episodios if episodio]  # Elimina espacios y filtra vacíos
+                #print("Episodios ", total_episodios)
+                
+                # Extraer el número del texto
+                #episodio = re.search(r'\d+', total_episodios).group()  
                 datos_animes.append({
+                    "Id anime": id_a,
                     "Titulo": titulo,
                     "Tipo anime": tipo_anime,
                     "Cover": url + anime_cover,
                     "Status": anime_status,
                     "Sinopsis": sinopsis,
-                    "Géneros": ', '.join(lista_generos),
+                    "Generos": ', '.join(lista_generos),
                     "Popularidad": popularidad,
                     "Precuela": precuela,
                     "Secuela": secuela,
-                    #"Total episodios": episodio,
+                    "Total episodios": 0,
                 })
 
             else:
@@ -108,4 +122,62 @@ if datos_animes:  # Comprueba que la lista no esté vacía
         print("=" * 40)  # Separador de 40 signos de igual
     else:
         print("No hay datos en la lista.")
-print(type(datos_animes))
+
+datos_generos = {
+    'Acción': 1,
+    'Artes Marciales': 2,
+    'Aventuras': 3,
+    'Carreras': 4,
+    'Ciencia Ficción': 5,
+    'Comedia': 6,
+    'Demencia': 7,
+    'Demonios': 8,
+    'Deportes': 9,
+    'Drama': 10,
+    'Ecchi': 11,
+    'Escolares': 12,
+    'Espacial': 13,
+    'Fantasía': 14,
+    'Harem': 15,
+    'Histórico': 16,
+    'Infantil': 17,
+    'Josei': 18,
+    'Juegos': 19,
+    'Magia': 20,
+    'Mecha': 21,
+    'Militar': 22,
+    'Misterio': 23,
+    'Música': 24,
+    'Parodia': 25,
+    'Policía': 26,
+    'Psicológico': 27,
+    'Recuentos De La Vida': 28,
+    'Romance': 29,
+    'Samurai': 30,
+    'Seinen': 31,
+    'Shoujo': 32,
+    'Shounen': 33,
+    'Sobrenatural': 34,
+    'Superpoderes': 35,
+    'Suspenso': 36,
+    'Terror': 37,
+    'Vampiros': 38,
+    'Yaoi': 39,
+    'Yuri': 40
+}
+
+# Suponiendo que datos_animes ya tiene la lista de diccionarios como la que mencionas
+print("INSERT INTO se_clasifica_en(id_genero, id_anime) VALUES")
+
+for anime in datos_animes:
+    # Obtenemos el id_anime
+    id_anime = anime["Id anime"]
+    
+    # Obtenemos los géneros del anime (separados por comas)
+    generos = anime["Generos"].split(', ')
+    
+    # Para cada género, buscamos el id_genero y generamos el insert
+    for genero in generos:
+        id_genero = datos_generos.get(genero)
+        if id_genero:
+            print(f"({id_genero}, {id_anime}),")
